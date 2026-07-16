@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmritiAI — Working Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-deep:#0F2624;
+    --teal:#16302E;
+    --teal-panel:#1D3B38;
+    --brass:#C79A4B;
+    --brass-soft:#E6C989;
+    --paper:#F3F1EA;
+    --ink:#1A1A1A;
+    --slate:#8FA29D;
+    --line:#2C4A46;
+    --red-flag:#D2725B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:linear-gradient(180deg, var(--teal-deep) 0%, #0B1D1B 100%);
+    color:var(--paper);
+    min-height:100vh;
+    padding:30px 16px 56px;
+  }
+  .wrap{max-width:840px;margin:0 auto;}
+
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:44px;height:44px;border-radius:10px;
+    background:linear-gradient(155deg, #E0B563 0%, var(--brass) 45%, #8F6A28 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 0 rgba(255,255,255,.25) inset, 0 3px 8px rgba(0,0,0,.35);
+    flex-shrink:0;
+  }
+  .brand-mark svg{width:27px;height:27px;display:block;}
+  .brand h1{font-family:'Fraunces',serif;font-size:22px;margin:0;font-weight:600;letter-spacing:.2px;}
+  .brand p{margin:0;font-size:12.5px;color:var(--slate);}
+  .badge{
+    font-size:11.5px;color:var(--brass-soft);border:1px solid var(--line);
+    padding:6px 12px;border-radius:100px;background:#132A27;white-space:nowrap;
+  }
+
+  .grid{display:grid;grid-template-columns:260px 1fr;gap:16px;}
+  @media (max-width:680px){.grid{grid-template-columns:1fr;}}
+
+  .panel{
+    background:var(--teal-panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px;
+  }
+  .panel h2{font-family:'Fraunces',serif;font-size:14.5px;font-weight:600;margin:0 0 10px;color:var(--paper);}
+
+  .asset-list{display:flex;flex-direction:column;gap:8px;}
+  .asset-item{
+    text-align:left;width:100%;background:#132A27;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;cursor:pointer;color:var(--paper);font-family:'Inter',sans-serif;transition:.15s;
+  }
+  .asset-item:hover{border-color:var(--brass);}
+  .asset-item.active{border-color:var(--brass);background:#1F3934;}
+  .asset-item .name{font-size:12.8px;font-weight:500;display:block;margin-bottom:4px;}
+  .asset-item .meta{font-size:10.8px;color:var(--slate);display:flex;justify-content:space-between;align-items:center;}
+  .risk-chip{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:600;}
+  .risk-high{background:#3A1F19;color:var(--red-flag);}
+  .risk-med{background:#3A2F14;color:var(--brass-soft);}
+  .risk-low{background:#16302B;color:#7FBFA0;}
+
+  .main-col{display:flex;flex-direction:column;gap:16px;}
+
+  .asset-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .asset-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin:0 0 4px;}
+  .asset-sub{font-size:12.5px;color:var(--slate);margin:0;}
+  .dri-box{text-align:right;}
+  .dri-num{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--brass-soft);line-height:1;}
+  .dri-label{font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;}
+
+  .timeline{display:flex;flex-direction:column;gap:0;}
+  .tl-item{display:grid;grid-template-columns:70px 16px 1fr;gap:0;position:relative;}
+  .tl-date{font-size:11px;color:var(--slate);padding-top:2px;}
+  .tl-dot-col{display:flex;flex-direction:column;align-items:center;}
+  .tl-dot{width:9px;height:9px;border-radius:50%;background:var(--brass);margin-top:4px;flex-shrink:0;}
+  .tl-line{flex:1;width:1px;background:var(--line);margin-top:2px;}
+  .tl-body{padding:0 0 16px 12px;}
+  .tl-title{font-size:13px;font-weight:500;margin:0 0 3px;}
+  .tl-detail{font-size:11.8px;color:#C9D6D2;margin:0 0 3px;line-height:1.5;}
+  .tl-tag{font-size:10px;color:var(--slate);}
+  .tl-item.repeat .tl-dot{background:var(--red-flag);}
+  .tl-item.repeat .tl-title{color:var(--red-flag);}
+  .tl-item.current .tl-dot{background:var(--brass-soft);box-shadow:0 0 0 5px rgba(230,201,137,.28);}
+  .tl-item.current .tl-title{color:var(--brass-soft);}
+  .new-pill{
+    display:inline-block;font-size:9.5px;font-weight:600;background:#3A2F14;color:var(--brass-soft);
+    padding:2px 8px;border-radius:100px;margin-left:7px;vertical-align:middle;letter-spacing:.03em;
+  }
+
+  .graph-panel svg{width:100%;height:auto;display:block;}
+  .graph-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:10.8px;color:var(--slate);}
+  .legend-dot{width:9px;height:9px;border-radius:50%;}
+
+  .rec-card{
+    background:linear-gradient(160deg, #1F3934 0%, #17302B 100%);
+    border:1px solid var(--brass);border-radius:14px;padding:18px 18px 16px;
+  }
+  .rec-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .rec-label{font-size:10.5px;color:var(--brass-soft);text-transform:uppercase;letter-spacing:.05em;}
+  .conf-badge{font-size:11px;background:#0F2624;border:1px solid var(--brass);color:var(--brass-soft);padding:3px 10px;border-radius:100px;}
+  .rec-text{font-size:14px;line-height:1.6;margin:0 0 12px;}
+  .save-row{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;}
+  .save-num{font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--brass-soft);}
+  .save-label{font-size:11.5px;color:var(--slate);}
+  .breakdown-toggle{
+    background:none;border:none;color:var(--brass-soft);font-size:11.5px;cursor:pointer;
+    text-decoration:underline;padding:0;font-family:'Inter',sans-serif;
+  }
+  .breakdown{
+    margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
+    font-size:11.5px;color:#C9D6D2;line-height:1.7;display:none;
+  }
+  .breakdown.show{display:block;}
+  .breakdown .row{display:flex;justify-content:space-between;}
+  .breakdown .row.total{font-weight:600;color:var(--brass-soft);border-top:1px solid var(--line);margin-top:4px;padding-top:4px;}
+
+  .pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .pl-step{background:#132A27;border:1px solid var(--line);border-radius:9px;padding:8px 6px;text-align:center;font-size:10.2px;color:var(--slate);}
+  .pl-step b{display:block;font-size:11px;color:var(--paper);margin-bottom:2px;font-weight:600;}
+  .pl-step.live{border-color:var(--brass);color:var(--brass-soft);background:#22331A;}
+  .pl-step.live b{color:var(--brass-soft);}
+  .pl-step.done{border-color:#3F5C55;}
+
+  .note-box{
+    font-size:12px;color:var(--slate);background:#132A27;border:1px dashed var(--line);
+    border-radius:10px;padding:10px 13px;line-height:1.55;
+  }
+  footer{text-align:center;font-size:11.5px;color:var(--slate);margin-top:6px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M36.2 9.45 A19 19 0 1 1 11.8 9.45" stroke="#152A28" stroke-width="2.1" stroke-linecap="round" fill="none" opacity="0.55"/>
+          <line x1="24" y1="24" x2="24" y2="12" stroke="#152A28" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="24" y1="24" x2="14" y2="32" stroke="#152A28" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="24" y1="24" x2="34" y2="32" stroke="#152A28" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="24" cy="24" r="4.6" fill="#152A28"/>
+          <circle cx="24" cy="12" r="3" fill="#152A28"/>
+          <circle cx="14" cy="32" r="3" fill="#152A28"/>
+          <circle cx="34" cy="32" r="3" fill="#152A28"/>
+        </svg>
+      </div>
+      <div>
+        <h1>SmritiAI</h1>
+        <p>Decision memory for Ward 14 civic assets</p>
+      </div>
+    </div>
+    <div class="badge">Working prototype — v0.1</div>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Assets — Ward 14</h2>
+      <div class="asset-list" id="assetList"></div>
+    </div>
+
+    <div class="main-col">
+      <div class="panel">
+        <div class="asset-header">
+          <div>
+            <p class="asset-title" id="assetTitle">—</p>
+            <p class="asset-sub" id="assetSub">—</p>
+          </div>
+          <div class="dri-box">
+            <div class="dri-num" id="driNum">—</div>
+            <div class="dri-label">Decision risk index</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Decision timeline</h2>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <div class="panel graph-panel">
+        <h2>Linked decision graph</h2>
+        <svg id="graphSvg" viewBox="0 0 560 190"></svg>
+        <div class="graph-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#C79A4B"></span>Asset</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#7FA8D1"></span>Decision</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#8FBF8A"></span>Department</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#D2725B"></span>Root cause</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Pipeline — this asset's last query</h2>
+        <div class="pipeline" id="pipeline">
+          <div class="pl-step" data-step="ocr"><b>1 · OCR</b>Digitize records</div>
+          <div class="pl-step" data-step="graph"><b>2 · Graph</b>Link decisions</div>
+          <div class="pl-step" data-step="timeline"><b>3 · Timeline</b>Order events</div>
+          <div class="pl-step" data-step="root"><b>4 · Root cause</b>Find pattern</div>
+          <div class="pl-step" data-step="rec"><b>5 · Recommend</b>Draft action</div>
+        </div>
+      </div>
+
+      <div class="rec-card">
+        <div class="rec-top">
+          <span class="rec-label">AI recommendation</span>
+          <span class="conf-badge" id="confBadge">confidence —</span>
+        </div>
+        <p class="rec-text" id="recText">—</p>
+        <div class="save-row">
+          <span class="save-num" id="saveNum">—</span>
+          <span class="save-label">estimated saving if adopted</span>
+        </div>
+        <button class="breakdown-toggle" id="breakdownToggle">Show calculation</button>
+        <div class="breakdown" id="breakdown"></div>
+      </div>
+
+      <div class="note-box">
+        Asset records, timelines and the knowledge graph shown here are a synthetic dataset standing
+        in for real municipal tenders and inspection files, while formal data-sharing access with the
+        municipality is arranged. The OCR → graph → timeline → root cause →
+        recommendation pipeline above and the savings calculation are wired to run on this dataset
+        end-to-end, not hard-coded per asset — select a different asset to see it re-run.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Working prototype for <b>SmritiAI</b> — AI for Bharat Hackathon 2026.
+  </footer>
+</div>
+
+<script>
+const ASSETS = {
+  road14: {
+    name: "MG Road, Sector 14 — carriageway",
+    sub: "Asphalt road · 1.2 km · last resurfaced 2023",
+    dri: 88, risk: "high",
+    timeline: [
+      {date:"Mar 2021", title:"Pothole patch repair", detail:"Ward office approved spot patching after 6 citizen complaints. Cost: ₹1.4L. No drainage survey conducted.", tag:"PWD Ward 14", repeat:false},
+      {date:"Nov 2021", title:"Pothole patch repair (repeat)", detail:"Same 200m stretch repatched. Inspection note flagged waterlogging as likely cause but no drainage work followed.", tag:"PWD Ward 14", repeat:true},
+      {date:"Aug 2022", title:"Pothole patch repair (repeat)", detail:"Third patch on the same stretch after monsoon. Contractor changed; root cause still not addressed.", tag:"PWD Ward 14", repeat:true},
+      {date:"Feb 2023", title:"Full resurfacing", detail:"Ward sanctioned full resurfacing, ₹9.2L. Drainage still not upgraded — same waterlogging risk remains.", tag:"PWD Ward 14", repeat:false},
+      {date:"Jul 2025", title:"Complaints reopened", detail:"Waterlogging on the same stretch reported again after monsoon, less than 2.5 years after resurfacing. Inspection reconfirms drainage as the root cause, still unresolved.", tag:"PWD Ward 14", repeat:true},
+      {date:"Jun 2026", title:"New repair request logged", detail:"Ward office logged a fresh patch request for this stretch. SmritiAI surfaced the asset's four-cycle repeat history before any funds were sanctioned.", tag:"PWD Ward 14", repeat:false, current:true},
+    ],
+    root: "Recurring pothole formation traced to inadequate stormwater drainage capacity on this stretch — three patch repairs and a 2025 reopened complaint have treated the symptom, not the cause.",
+    rec: "A new repair request just came in for this stretch. Pair it with a stormwater drain upgrade instead of another patch — the pattern since 2021 shows patching alone fails within 6–9 months here.",
+    conf: 90,
+    saving: "₹6.8L",
+    calc: [
+      ["Repeat patch/response costs, 2021–2025 (4 cycles)", "₹5.5L"],
+      ["Projected cost of one durable fix (drain + resurface)", "₹9.6L"],
+      ["Avoided cost of a further repeat cycle in 2026", "₹1.3L"],
+      ["Net saving vs. continuing the patch-and-repeat pattern", "₹6.8L"],
+    ]
+  },
+  drain09: {
+    name: "Storm drain, Zone 9 outfall",
+    sub: "RCC drain · 400m · desilted twice in 18 months",
+    dri: 71, risk: "med",
+    timeline: [
+      {date:"Jun 2022", title:"Desilting works", detail:"Routine pre-monsoon desilting. No structural inspection recorded.", tag:"Municipal Corp — Drainage", repeat:false},
+      {date:"Sep 2023", title:"Desilting works (repeat)", detail:"Second desilting in 15 months. Inspector noted partial blockage from an unauthorized construction debris dump upstream.", tag:"Municipal Corp — Drainage", repeat:true},
+      {date:"May 2025", title:"Desilting works (repeat)", detail:"Third desilting in three years. The same upstream debris dump flagged in 2023 still hasn't been cleared.", tag:"Municipal Corp — Drainage", repeat:true},
+      {date:"Jan 2026", title:"Enforcement referral raised", detail:"SmritiAI's repeat-pattern flag was cited when the ward raised a formal referral to the enforcement wing for the upstream dump site.", tag:"Municipal Corp — Drainage", repeat:false, current:true},
+    ],
+    root: "Recurring silt build-up linked to an unresolved unauthorized debris dump upstream of the outfall, not a design or capacity issue — flagged in 2023 and still unresolved as of the 2025 desilting.",
+    rec: "Follow through on the enforcement referral before the next monsoon — three desilting cycles since 2022 confirm this keeps recurring until the upstream dump site is actually cleared, not just re-flagged.",
+    conf: 81,
+    saving: "₹2.6L",
+    calc: [
+      ["Cost of 3 desilting cycles (2022–2025)", "₹2.4L"],
+      ["Projected cost of 1 desilting after dump site cleared", "₹0.9L"],
+      ["Avoided cost of a 4th repeat desilting (2026 projection)", "₹1.1L"],
+      ["Net saving vs. continuing repeat desilting", "₹2.6L"],
+    ]
+  },
+  streetlight22: {
+    name: "Streetlight line, Ward 14 — Zone C",
+    sub: "LED conversion · 3.4 km · installed 2020",
+    dri: 31, risk: "low",
+    timeline: [
+      {date:"Jan 2020", title:"LED conversion completed", detail:"Full line converted from sodium vapour to LED under Smart City fund.", tag:"Electrical Dept.", repeat:false},
+      {date:"Jul 2024", title:"Routine fault repair", detail:"Isolated fault, 4 poles. Standard maintenance, no pattern flagged.", tag:"Electrical Dept.", repeat:false},
+      {date:"Feb 2026", title:"Annual inspection", detail:"Routine annual check, current as of this cycle. No faults, no pattern flagged.", tag:"Electrical Dept.", repeat:false, current:true},
+    ],
+    root: "No recurring pattern detected across the full 2020–2026 record — a single isolated fault, consistent with normal wear.",
+    rec: "No structural intervention needed. Continue the standard annual maintenance schedule for this line.",
+    conf: 91,
+    saving: "₹0",
+    calc: [
+      ["Historical repair cost pattern", "Isolated, non-repeating"],
+      ["Projected saving from intervention", "Not applicable"],
+      ["Recommendation", "Maintain routine schedule"],
+      ["Net saving", "₹0"],
+    ]
+  }
+};
+
+const assetList = document.getElementById('assetList');
+Object.entries(ASSETS).forEach(([key, a], i) => {
+  const btn = document.createElement('button');
+  btn.className = 'asset-item' + (i === 0 ? ' active' : '');
+  btn.dataset.key = key;
+  btn.innerHTML = `<span class="name">${a.name}</span><span class="meta"><span>${a.sub.split('·')[0].trim()}</span><span class="risk-chip risk-${a.risk}">DRI ${a.dri}</span></span>`;
+  btn.addEventListener('click', () => selectAsset(key));
+  assetList.appendChild(btn);
+});
+
+function renderTimeline(items){
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  items.forEach((it, i) => {
+    const row = document.createElement('div');
+    row.className = 'tl-item' + (it.repeat ? ' repeat' : '') + (it.current ? ' current' : '');
+    row.innerHTML = `
+      <div class="tl-date">${it.date}</div>
+      <div class="tl-dot-col"><div class="tl-dot"></div>${i < items.length - 1 ? '<div class="tl-line"></div>' : ''}</div>
+      <div class="tl-body">
+        <p class="tl-title">${it.title}${it.repeat ? ' — repeat on same asset' : ''}${it.current ? '<span class="new-pill">just logged</span>' : ''}</p>
+        <p class="tl-detail">${it.detail}</p>
+        <span class="tl-tag">${it.tag}</span>
+      </div>`;
+    tl.appendChild(row);
+  });
+}
+
+function renderGraph(a, key){
+  const svg = document.getElementById('graphSvg');
+  const assetNode = {x:70, y:95, label:'Asset', color:'#C79A4B', dark:'#4A3A1A'};
+  const deptNode = {x:70, y:30, label:a.timeline[0].tag.split('—')[0].trim(), color:'#8FBF8A', dark:'#1E3A1E'};
+  const rootNode = {x:490, y:95, label:'Root cause', color:'#D2725B', dark:'#3A1F19'};
+  const decisionNodes = a.timeline.map((t, i) => ({
+    x: 200 + i * (260 / Math.max(1, a.timeline.length - 1)),
+    y: 95 + (i % 2 === 0 ? -38 : 38),
+    label: t.date, color:'#7FA8D1', dark:'#1E2E3A'
+  }));
+
+  let edges = '';
+  decisionNodes.forEach(d => {
+    edges += `<line x1="${assetNode.x}" y1="${assetNode.y}" x2="${d.x}" y2="${d.y}" stroke="#2C4A46" stroke-width="1.4"/>`;
+    edges += `<line x1="${d.x}" y1="${d.y}" x2="${rootNode.x}" y2="${rootNode.y}" stroke="#2C4A46" stroke-width="1" stroke-dasharray="3,3"/>`;
+  });
+  edges += `<line x1="${assetNode.x}" y1="${assetNode.y}" x2="${deptNode.x}" y2="${deptNode.y}" stroke="#2C4A46" stroke-width="1.4"/>`;
+
+  function nodeCircle(n, r){
+    return `<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${n.dark}" stroke="${n.color}" stroke-width="1.5"/>`;
+  }
+  function nodeLabel(n, dy){
+    return `<text x="${n.x}" y="${n.y + dy}" text-anchor="middle" font-size="9" fill="${n.color}" font-family="Inter,sans-serif">${n.label}</text>`;
+  }
+
+  let nodesHtml = nodeCircle(assetNode, 16) + nodeLabel(assetNode, 3) +
+                   nodeCircle(deptNode, 12) + nodeLabel(deptNode, 24) +
+                   nodeCircle(rootNode, 14) + nodeLabel(rootNode, 3);
+  decisionNodes.forEach(d => {
+    nodesHtml += nodeCircle(d, 9) + nodeLabel(d, d.y < 95 ? -14 : 20);
+  });
+
+  svg.innerHTML = edges + nodesHtml;
+}
+
+function selectAsset(key){
+  document.querySelectorAll('.asset-item').forEach(el => el.classList.toggle('active', el.dataset.key === key));
+  const a = ASSETS[key];
+
+  document.getElementById('assetTitle').textContent = a.name;
+  document.getElementById('assetSub').textContent = a.sub;
+  document.getElementById('driNum').textContent = a.dri;
+
+  renderTimeline(a.timeline);
+  renderGraph(a, key);
+
+  document.getElementById('recText').textContent = a.rec;
+  document.getElementById('confBadge').textContent = 'confidence ' + a.conf + '%';
+  document.getElementById('saveNum').textContent = a.saving;
+
+  const bd = document.getElementById('breakdown');
+  bd.innerHTML = a.calc.map(([label, val]) => {
+    const isTotal = label.toLowerCase().startsWith('net saving') || label.toLowerCase() === 'recommendation';
+    return `<div class="row${isTotal ? ' total' : ''}"><span>${label}</span><span>${val}</span></div>`;
+  }).join('');
+  bd.classList.remove('show');
+  document.getElementById('breakdownToggle').textContent = 'Show calculation';
+
+  runPipeline();
+}
+
+function runPipeline(){
+  const order = ['ocr','graph','timeline','root','rec'];
+  document.querySelectorAll('.pl-step').forEach(s => s.classList.remove('live','done'));
+  let i = 0;
+  const step = () => {
+    if(i > 0){
+      const prev = document.querySelector('.pl-step[data-step="'+order[i-1]+'"]');
+      prev.classList.remove('live');
+      prev.classList.add('done');
+    }
+    if(i >= order.length) return;
+    document.querySelector('.pl-step[data-step="'+order[i]+'"]').classList.add('live');
+    i++;
+    setTimeout(step, 380);
+  };
+  step();
+}
+
+document.getElementById('breakdownToggle').addEventListener('click', () => {
+  const bd = document.getElementById('breakdown');
+  bd.classList.toggle('show');
+  document.getElementById('breakdownToggle').textContent = bd.classList.contains('show') ? 'Hide calculation' : 'Show calculation';
+});
+
+selectAsset('road14');
+</script>
+</body>
+</html>
